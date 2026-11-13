@@ -1,0 +1,14 @@
+{
+  "name": "CMU 17-313 OpenCode",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "bun",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  }
+}
