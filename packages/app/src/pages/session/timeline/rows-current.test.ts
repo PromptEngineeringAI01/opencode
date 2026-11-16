@@ -204,4 +204,53 @@ describe("current session timeline rows", () => {
 
     expect(result.rows.map((row) => row._tag)).toEqual(["UserMessage", "AssistantPart"])
   })
+
+  test.each([
+    ["type and message", '{"error":{"type":"RateLimit","message":"slow down"}}', "RateLimit: slow down"],
+    [
+      "Error: prefix before JSON",
+      'Error: {"error":{"type":"RateLimit","message":"slow down"}}',
+      "RateLimit: slow down",
+    ],
+    ["only error.message", '{"error":{"message":"slow down"}}', "slow down"],
+    ["only error.type", '{"error":{"type":"Overloaded"}}', "Overloaded"],
+    ["only error.code", '{"error":{"code":"rate_limit"}}', "rate_limit"],
+    ["top-level message", '{"message":"bad request"}', "bad request"],
+    ["error as a string", '{"error":"unauthorized"}', "unauthorized"],
+    ["JSON encoded twice", JSON.stringify(JSON.stringify({ error: { message: "nested" } })), "nested"],
+    ["JSON inside surrounding text", 'Request failed {"error":{"type":"Overloaded"}} retry later', "Overloaded"],
+    ["plain text", "connection reset", "connection reset"],
+    ["plain text keeps its Error: prefix", "Error: connection reset", "Error: connection reset"],
+    ["JSON with no usable field", '{"status":500}', '{"status":500}'],
+    ["JSON that is not an object", "[1,2]", "[1,2]"],
+  ])("shows the latest assistant error: %s", (_, message, expected) => {
+    const source = [
+      { id: "msg_user", type: "user", text: "hello", time: { created: 1 } },
+      {
+        id: "msg_failed",
+        type: "assistant",
+        agent: "build",
+        model: { id: "model", providerID: "provider" },
+        content: [],
+        error: { type: "ProviderError", message },
+        time: { created: 2, completed: 3 },
+      },
+    ] satisfies SessionMessageInfo[]
+    const normalized = normalizeSessionMessages("ses_1", source)
+    const messages = new Map(normalized.messages.map((message) => [message.id, message]))
+
+    const result = Timeline.constructSessionMessageRows(
+      source,
+      (messageID) => messages.get(messageID),
+      (messageID) => normalized.parts.get(messageID) ?? [],
+      true,
+      "idle",
+      true,
+      normalized.messages.filter((message) => message.role === "user"),
+    )
+
+    const last = result.rows.at(-1)
+    expect(last?._tag).toBe("Error")
+    expect(last?._tag === "Error" ? last.text : undefined).toBe(expected)
+  })
 })
