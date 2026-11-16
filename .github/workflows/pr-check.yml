@@ -1,0 +1,30 @@
+# 檢查每個 PR：有連結 Issue（Closes #N），而且有寫「如何測試」。
+name: pr-check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: 檢查 PR 描述
+        env:
+          # 透過環境變數傳入，避免 PR 內容被當成指令執行。
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          fail=0
+          if ! grep -qiE '(close[sd]?|fix(e[sd])?|resolve[sd]?) +#[0-9]+' <<<"$BODY"; then
+            echo "::error::PR 描述要有 'Closes #<issue 編號>'"
+            fail=1
+          fi
+          testing=$(awk '/^## 如何測試/{f=1;next} /^## /{f=0} f' <<<"$BODY" | grep -vE '^\s*$' || true)
+          if [ -z "$testing" ]; then
+            echo "::error::請填寫「## 如何測試」段落"
+            fail=1
+          fi
+          exit $fail

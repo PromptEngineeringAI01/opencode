@@ -1,0 +1,36 @@
+# 一次性設定：建立 labels 和 milestones。
+# 用法：GitHub 網頁 → Actions → setup-labels → Run workflow。重跑也安全。
+name: setup-labels
+
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: 建立 labels
+        run: |
+          gh label create user-story      --color 5319e7 --description "使用者故事" --force
+          gh label create task            --color 0e8a16 --description "從故事拆出的開發任務" --force
+          gh label create bug             --color d73a4a --description "錯誤" --force
+          gh label create "priority:high" --color b60205 --description "高 Impact、低 Effort：先做" --force
+          gh label create "priority:mid"  --color fbca04 --description "值得做，排後面" --force
+          gh label create "priority:low"  --color c5def5 --description "有空再說" --force
+
+      - name: 建立 milestones
+        run: |
+          for m in "Sprint 1" "Sprint 2" "Stretch"; do
+            if gh api "repos/$GH_REPO/milestones?state=all" --jq '.[].title' | grep -qx "$m"; then
+              echo "已存在：$m"
+            else
+              gh api "repos/$GH_REPO/milestones" -f title="$m" --silent && echo "已建立：$m"
+            fi
+          done

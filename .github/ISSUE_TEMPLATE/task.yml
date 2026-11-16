@@ -1,0 +1,49 @@
+name: 開發任務 (Backlog Task)
+description: 從 User Story 拆出來、一個人能從頭做到尾的工作
+title: "[Task] "
+labels: ["task"]
+# Milestone（Sprint 1 / Sprint 2 / Stretch）和 Assignee 請在建立後從右側欄設定。
+body:
+  - type: input
+    id: story
+    attributes:
+      label: 來自哪個 User Story
+      placeholder: "#12"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: 要做什麼
+    validations:
+      required: true
+  - type: input
+    id: hours
+    attributes:
+      label: 預估時數
+      placeholder: "6"
+    validations:
+      required: true
+  - type: dropdown
+    id: size
+    attributes:
+      label: T-shirt 尺寸
+      options: [S（半天內）, M（1～2 天）, L（3～5 天）, XL（太大，請再拆）]
+    validations:
+      required: true
+  - type: input
+    id: deps
+    attributes:
+      label: 依賴（要等哪些 issue 先完成？沒有就寫「無」）
+      placeholder: "無"
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 驗收條件（怎麼知道做完了？要怎麼測？）
+      value: |
+        - [ ]
+        - [ ] 有測試覆蓋這個功能
+    validations:
+      required: true

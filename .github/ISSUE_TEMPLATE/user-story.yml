@@ -1,0 +1,45 @@
+name: 使用者故事 (User Story)
+description: As a [角色], I want [功能], so that [價值]
+title: "[Story] "
+labels: ["user-story"]
+body:
+  - type: input
+    id: role
+    attributes:
+      label: As a（誰？）
+      placeholder: 第一次接觸這個 codebase 的學生
+    validations:
+      required: true
+  - type: input
+    id: function
+    attributes:
+      label: I want（想要什麼功能？）
+      placeholder: 在側邊欄看到每個檔案的一句話摘要
+    validations:
+      required: true
+  - type: input
+    id: value
+    attributes:
+      label: So that（為什麼？帶來什麼價值？）
+      placeholder: 我能更快找到要改的地方
+    validations:
+      required: true
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact（對使用者多重要）
+      options: [高, 中, 低]
+    validations:
+      required: true
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Effort（要花多少力氣）
+      options: [低, 中, 高]
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: 排序理由
+      description: 為什麼給這個 Impact／Effort？（1～2 句）
