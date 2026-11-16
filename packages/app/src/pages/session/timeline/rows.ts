@@ -267,50 +267,46 @@ export namespace Timeline {
   }
 
   function unwrapErrorMessage(message: string) {
-    const text = message.replace(/^Error:\s*/, "").trim()
-
-    const parse = (value: string) => {
-      try {
-        return JSON.parse(value) as unknown
-      } catch {
-        return undefined
-      }
-    }
-
-    const read = (value: string) => {
-      const first = parse(value)
-      if (typeof first !== "string") return first
-      return parse(first.trim())
-    }
-
-    let json = read(text)
-
-    if (json === undefined) {
-      const start = text.indexOf("{")
-      const end = text.lastIndexOf("}")
-      if (start !== -1 && end > start) json = read(text.slice(start, end + 1))
-    }
-
+    const json = findJson(message.replace(/^Error:\s*/, "").trim())
     if (!record(json)) return message
+    return describeError(json) || message
+  }
 
-    const err = record(json.error) ? json.error : undefined
-    if (err) {
-      const type = typeof err.type === "string" ? err.type : undefined
-      const msg = typeof err.message === "string" ? err.message : undefined
-      if (type && msg) return `${type}: ${msg}`
-      if (msg) return msg
-      if (type) return type
-      const code = typeof err.code === "string" ? err.code : undefined
-      if (code) return code
+  function findJson(text: string) {
+    const json = readJson(text)
+    if (json !== undefined) return json
+    const start = text.indexOf("{")
+    const end = text.lastIndexOf("}")
+    if (start === -1 || end <= start) return undefined
+    return readJson(text.slice(start, end + 1))
+  }
+
+  // Some providers send the error body as a JSON string that itself contains JSON.
+  function readJson(value: string) {
+    const first = parseJson(value)
+    if (typeof first !== "string") return first
+    return parseJson(first.trim())
+  }
+
+  function parseJson(value: string): unknown {
+    try {
+      return JSON.parse(value)
+    } catch {
+      return undefined
     }
+  }
 
-    const msg = typeof json.message === "string" ? json.message : undefined
-    if (msg) return msg
+  // Candidates in priority order; `find(Boolean)` skips empty strings, matching the original truthiness checks.
+  function describeError(json: Record<string, unknown>) {
+    const err = record(json.error) ? json.error : undefined
+    const type = asString(err?.type)
+    const msg = asString(err?.message)
+    if (type && msg) return `${type}: ${msg}`
+    return [msg, type, asString(err?.code), asString(json.message), asString(json.error)].find(Boolean)
+  }
 
-    const reason = typeof json.error === "string" ? json.error : undefined
-    if (reason) return reason
-
-    return message
+  function asString(value: unknown) {
+    return typeof value === "string" ? value : undefined
   }
 
   function record(value: unknown): value is Record<string, unknown> {
