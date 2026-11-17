@@ -48,7 +48,7 @@ test("R5: the result is the deciding rule itself", () => {
   fc.assert(
     fc.property(fc.array(rule), fc.string(), (rules, cmd) => {
       const result = Permission.evaluate("bash", cmd, rules)
-      if (rules.includes(result)) return
+      if (rules.some((r) => r === result)) return
       expect(result).toEqual({ permission: "bash", pattern: "*", action: "ask" })
     }),
   )
@@ -69,7 +69,7 @@ test("R6: `ls *` matches bare ls and ls with arguments only", () => {
   fc.assert(
     fc.property(ls, (cmd) => {
       const expected = cmd === "ls" || cmd.startsWith("ls ") ? "deny" : "ask"
-      const rules = [{ permission: "bash", pattern: "ls *", action: "deny" }]
+      const rules = [{ permission: "bash", pattern: "ls *", action: "deny" as const }]
       expect(Permission.evaluate("bash", cmd, rules).action).toBe(expected)
     }),
   )
