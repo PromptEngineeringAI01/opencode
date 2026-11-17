@@ -8,12 +8,12 @@
 
 | ID | Interview evidence | Requirement | Acceptance Criteria | Changed in P4? | Property (kind) | Test |
 |---|---|---|---|---|---|---|
-| R1 | — | When a command matches several rules, the last matching rule in the config decides the action. | `{"*": "allow", "rm *": "deny"}`: `rm -rf /` → `deny`, `ls -la` → `allow`. | No | Model | 待補 |
-| R2 | — | A command that matches no rule resolves to `ask`. | Empty ruleset, any command → `ask`. | No | Invariant | 待補 |
+| R1 | — | When a command matches several rules, the last matching rule in the config decides the action. | `{"*": "allow", "rm *": "deny"}`: `rm -rf /` → `deny`, `ls -la` → `allow`. | No | Model | `permission.property.test.ts` › R1: the last matching rule decides |
+| R2 | — | A command that matches no rule resolves to `ask`. | Empty ruleset, any command → `ask`. | No | Invariant | `permission.property.test.ts` › R2: no matching rule resolves to ask |
 | R3 | — | Merged into R2. | — | Yes (infeasible) | — | — |
 | R4 | — | Merged into R1. | — | Yes (conflict) | — | — |
-| R5 | — | The result identifies the deciding rule: it is the matching rule from the config itself; when nothing matches, it is an `ask` rule with pattern `*`. | `{"rm *": "deny"}`, `rm x` → returns `{permission: "bash", pattern: "rm *", action: "deny"}`. | Yes (uncheckable) | Invariant | 待補 |
-| R6 | — | A pattern `<cmd> *` matches the bare `<cmd>` and `<cmd>` followed by arguments, and nothing else. | `{"ls *": "deny"}`: `ls` → `deny`, `ls -la` → `deny`, `lsof` → `ask`. | No | Model | 待補 |
+| R5 | — | The result identifies the deciding rule: it is the matching rule from the config itself; when nothing matches, it is an `ask` rule with pattern `*`. | `{"rm *": "deny"}`, `rm x` → returns `{permission: "bash", pattern: "rm *", action: "deny"}`. | Yes (uncheckable) | Invariant | `permission.property.test.ts` › R5: the result is the deciding rule itself |
+| R6 | — | A pattern `<cmd> *` matches the bare `<cmd>` and `<cmd>` followed by arguments, and nothing else. | `{"ls *": "deny"}`: `ls` → `deny`, `ls -la` → `deny`, `lsof` → `ask`. | No | Model | `permission.property.test.ts` › R6: `ls *` matches bare ls and ls with arguments only |
 
 Properties written or suggested by opencode or another AI tool: none
 
